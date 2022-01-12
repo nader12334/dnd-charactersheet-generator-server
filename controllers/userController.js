@@ -135,7 +135,7 @@ userController.verifyUser = (req, res, next) => {
 };
 
 userController.setSSIDCookie = (req, res, next) => {
-  res.cookie("ssid", res.locals.currentUserSSID, { domain: "solo-project-dnd" });
+  res.cookie("ssid", res.locals.currentUserSSID, { domain: "localhost" });
   next();
 };
 
