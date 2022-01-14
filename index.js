@@ -1,9 +1,4 @@
 const cors = require("cors");
-const express = require("express");
-const app = express();
-const PORT = 8080;
-const userController = require("./controllers/userController");
-const cookieParser = require("cookie-parser");
 const whitelist = [
   "http://localhost:3000",
   "http://www.localhost:3000",
@@ -12,7 +7,6 @@ const whitelist = [
   "http://192.168.1.254:3000",
   "http://www.192.168.1.254:3000"
 ];
-
 const corsOptions = {
   credentials: true,
   origin: (origin, callback) => {
@@ -24,100 +18,121 @@ const corsOptions = {
   },
 };
 
-app.use(cors(corsOptions));
-app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const PORT = 8080;
 
-app.post(
-  "/user",
-  userController.signUp,
-  userController.createSheet,
-  userController.linkSheet,
-  userController.setSSIDCookie,
-  (req, res) => {
-    res
-      .status(200)
-      .json({ newUser: res.locals.currentUser, newSheet: res.locals.newSheet });
-  }
-);
+const {ApolloServer, gql} = require('apollo-server-express')
+const typeDefs = require('./graphqlSchema/typeDefs')
+const resolvers = require('./graphqlSchema/resolvers')
 
-app.get("/user/:id", userController.getUserData, (req, res) => {
-  res.status(200).json(res.locals.characters);
-});
+const startServer = async () => {
+  const app = express()
+  const apolloServer = new ApolloServer({
+    typeDefs,
+    resolvers,
+  })
 
-app.get("/char/:id", userController.getCharData, (req, res) => {
-  res.status(200).json(res.locals.sheet);
-});
+  await apolloServer.start()
+  apolloServer.applyMiddleware({app,})
+  app.use(cors(corsOptions));
+  app.use(cookieParser());
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use((req, res) => {
+    res.send('Hello from express apollo server')
+  })
+  app.listen(PORT, ()=>{console.log(`Server listening on port ${PORT}`)})
+}
+startServer()
 
-app.post(
-  "/char",
-  userController.getUsername,
-  userController.createSheet,
-  userController.linkSheet,
-  (req, res) => {
-    res.status(200).json({ newSheet: res.locals.newSheet });
-  }
-);
+// app.post(
+//   "/user",
+//   userController.signUp,
+//   userController.createSheet,
+//   userController.linkSheet,
+//   userController.setSSIDCookie,
+//   (req, res) => {
+//     res
+//       .status(200)
+//       .json({ newUser: res.locals.currentUser, newSheet: res.locals.newSheet });
+//   }
+// );
 
-app.delete(
-  "/char",
-  userController.getUsername,
-  userController.deleteSheet,
-  userController.unlinkSheet,
-  (req, res) => {
-    res.status(200).json({ deletedSheet: res.locals.deletedSheet });
-  }
-);
+// app.get("/user/:id", userController.getUserData, (req, res) => {
+//   res.status(200).json(res.locals.characters);
+// });
 
-app.get("/login", userController.checkSSID, (req, res) => {
-  res.status(200).json(res.locals.currentUser)
-})
+// app.get("/char/:id", userController.getCharData, (req, res) => {
+//   res.status(200).json(res.locals.sheet);
+// });
 
-app.post(
-  "/login",
-  userController.verifyUser,
-  userController.setSSIDCookie,
-  (req, res) => {
-    if (res.locals.currentUser) {
-      res.status(200).json(res.locals.currentUser);
-    } else {
-      res.status(500).json({ error: "user not found" })
-    }
-  }
-);
+// app.post(
+//   "/char",
+//   userController.getUsername,
+//   userController.createSheet,
+//   userController.linkSheet,
+//   (req, res) => {
+//     res.status(200).json({ newSheet: res.locals.newSheet });
+//   }
+// );
 
-app.post(
-  "/loginandsave",
-  userController.verifyUser,
-  userController.createSheet,
-  userController.linkSheet,
-  userController.setSSIDCookie,
-  (req, res) => {
-    res
-      .status(200)
-      .json({ newUser: res.locals.currentUser, newSheet: res.locals.newSheet });
-  }
-);
+// app.delete(
+//   "/char",
+//   userController.getUsername,
+//   userController.deleteSheet,
+//   userController.unlinkSheet,
+//   (req, res) => {
+//     res.status(200).json({ deletedSheet: res.locals.deletedSheet });
+//   }
+// );
 
-app.use("*", (req, res) => {
-  res.status(404).send("Page not Found");
-});
+// app.get("/login", userController.checkSSID, (req, res) => {
+//   res.status(200).json(res.locals.currentUser)
+// })
 
-app.use((err, req, res, next) => {
-  const defaultErr = {
-    log: "Express error handler caught unknown middleware error",
-    status: 500,
-    message: { err: "An error occurred" },
-  };
+// app.post(
+//   "/login",
+//   userController.verifyUser,
+//   userController.setSSIDCookie,
+//   (req, res) => {
+//     if (res.locals.currentUser) {
+//       res.status(200).json(res.locals.currentUser);
+//     } else {
+//       res.status(500).json({ error: "user not found" })
+//     }
+//   }
+// );
 
-  const errorObj = Object.assign({}, defaultErr, err);
+// app.post(
+//   "/loginandsave",
+//   userController.verifyUser,
+//   userController.createSheet,
+//   userController.linkSheet,
+//   userController.setSSIDCookie,
+//   (req, res) => {
+//     res
+//       .status(200)
+//       .json({ newUser: res.locals.currentUser, newSheet: res.locals.newSheet });
+//   }
+// );
 
-  res.status(errorObj.status).json(errorObj.message);
-});
+// app.use("*", (req, res) => {
+//   res.status(404).send("Page not Found");
+// });
 
-app.listen(PORT, () => {
-  console.log(`listening on port ${PORT}`);
-});
+// app.use((err, req, res, next) => {
+//   const defaultErr = {
+//     log: "Express error handler caught unknown middleware error",
+//     status: 500,
+//     message: { err: "An error occurred" },
+//   };
 
-module.exports = app;
+//   const errorObj = Object.assign({}, defaultErr, err);
+
+//   res.status(errorObj.status).json(errorObj.message);
+// });
+
+// app.listen(PORT, () => {
+//   console.log(`listening on port ${PORT}`);
+// });
