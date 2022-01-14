@@ -149,7 +149,7 @@ userController.checkSSID = (req, res, next) => {
 }
 
 userController.getCharData = (req, res, next) => {
-  CharacterSheet.findOne({ _id: req.query.charId }, (err, sheet) => {
+  CharacterSheet.findOne({ _id: req.params.id }, (err, sheet) => {
     if (err) {
       return next(err);
     } else {

@@ -9,6 +9,8 @@ const whitelist = [
   "http://www.localhost:3000",
   "https://solo-project-dnd.herokuapp.com",
   "https://www.solo-project-dnd.herokuapp.com",
+  "http://192.168.1.254:3000",
+  "http://www.192.168.1.254:3000"
 ];
 
 const corsOptions = {
@@ -44,7 +46,7 @@ app.get("/user/:id", userController.getUserData, (req, res) => {
   res.status(200).json(res.locals.characters);
 });
 
-app.get("/char", userController.getCharData, (req, res) => {
+app.get("/char/:id", userController.getCharData, (req, res) => {
   res.status(200).json(res.locals.sheet);
 });
 
