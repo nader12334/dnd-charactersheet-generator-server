@@ -5,7 +5,11 @@ const whitelist = [
   "https://solo-project-dnd.herokuapp.com",
   "https://www.solo-project-dnd.herokuapp.com",
   "http://192.168.1.254:3000",
-  "http://www.192.168.1.254:3000"
+  "http://www.192.168.1.254:3000",
+  'https://studio.apollographql.com',
+  'https://www.studio.apollographql.com',
+  "https://studio.apollographql.com/sandbox/explorer",
+  "https://www.studio.apollographql.com/sandbox/explorer"
 ];
 const corsOptions = {
   credentials: true,
@@ -25,15 +29,21 @@ const PORT = 8080;
 const {ApolloServer, gql} = require('apollo-server-express')
 const typeDefs = require('./graphqlSchema/typeDefs')
 const resolvers = require('./graphqlSchema/resolvers')
-
 const startServer = async () => {
   const app = express()
   const apolloServer = new ApolloServer({
     typeDefs,
     resolvers,
+    context: ({ req, res }) => ({
+      req: req,
+      res: res
+    })
   })
 
   await apolloServer.start()
+
+
+  
   apolloServer.applyMiddleware({app,})
   app.use(cors(corsOptions));
   app.use(cookieParser());

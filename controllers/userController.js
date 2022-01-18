@@ -4,113 +4,6 @@ const bcrypt = require("bcrypt");
 
 const userController = {};
 
-userController.signUp = (req, res, next) => {
-  const { username, password } = req.body;
-
-  bcrypt.hash(password, 10, (err, hash) => {
-    if (err) {
-      res.status(500).json({ error: "Error during password hashing" });
-      next(err);
-    } else {
-      User.create({ username, password: hash }, (err, response) => {
-        if (err) {
-          res.status(500).json({
-            error: "Error during user creation, username may be taken",
-          });
-          next(err);
-        } else {
-          res.locals.currentUser = response;
-          res.locals.currentUserSSID = response.username;
-          next();
-        }
-      });
-    }
-  });
-};
-
-userController.createSheet = (req, res, next) => {
-  const {
-    name,
-    characterDescription,
-    info,
-    mainStats,
-    languageAndProficiencies,
-    armorClass,
-    speed,
-    attacksAndSpells,
-    featuresAndTraits,
-    equipment,
-  } = req.body;
-
-  CharacterSheet.create(
-    {
-      name,
-      characterDescription,
-      info,
-      mainStats,
-      languageAndProficiencies,
-      armorClass,
-      speed,
-      attacksAndSpells,
-      featuresAndTraits,
-      equipment,
-    },
-    (err, response) => {
-      if (err) {
-        res.status(500).json({ error: "Error during characterSheet creation" });
-        next(err);
-      } else {
-        res.locals.newSheet = response;
-        next();
-      }
-    }
-  );
-};
-
-userController.getUsername = (req, res, next) => {
-  res.locals.currentUser = { username: req.body.username };
-  next();
-};
-
-userController.deleteSheet = (req, res, next) => {
-  const { name, mainStats } = req.body;
-  CharacterSheet.findOneAndDelete({ name, mainStats, }, (err, deletedSheet) => {
-    console.log(err, deletedSheet)
-    res.locals.deletedSheet = deletedSheet
-    next()
-  });
-}
-
-userController.unlinkSheet = (req, res, next) => {
-  const { currentUser, deletedSheet } = res.locals;
-  console.log(currentUser, deletedSheet._id)
-  User.findOne({ username: currentUser.username }, (err, user) => {
-    user.characterSheets.pull(deletedSheet._id);
-    user.save((error) => {
-      if (error) {
-        console.log("error in character delete");
-        next(error);
-      } else {
-        next();
-      }
-    });
-  });
-}
-userController.linkSheet = (req, res, next) => {
-  const { currentUser, newSheet } = res.locals;
-
-  User.findOne({ username: currentUser.username }, (err, user) => {
-    user.characterSheets.push(newSheet._id);
-    user.save((error) => {
-      if (error) {
-        console.log("error in user save");
-        next(error);
-      } else {
-        next();
-      }
-    });
-  });
-};
 
 userController.verifyUser = (req, res, next) => {
   console.log("Where is my body?", req.body);
@@ -148,29 +41,29 @@ userController.checkSSID = (req, res, next) => {
   })
 }
 
-userController.getCharData = (req, res, next) => {
-  CharacterSheet.findOne({ _id: req.params.id }, (err, sheet) => {
-    if (err) {
-      return next(err);
-    } else {
-      res.locals.sheet = sheet;
-      next();
-    }
-  });
-};
+// userController.getCharData = (req, res, next) => {
+//   CharacterSheet.findOne({ _id: req.params.id }, (err, sheet) => {
+//     if (err) {
+//       return next(err);
+//     } else {
+//       res.locals.sheet = sheet;
+//       next();
+//     }
+//   });
+// };
 
-userController.getUserData = (req, res, next) => {
-  console.log(req.params)
-  User.findOne({ username: req.params.id })
-  .populate('characterSheets')
-  .exec((err, user) => {
-    console.log(err, user)
-    const characterNames = user.characterSheets.map((n) => {
-      return { characterName: n.name, characterId: n._id };
-    });
-    res.locals.characters = characterNames;
-    next();
-  });
-};
+// userController.getUserData = (req, res, next) => {
+//   console.log(req.params)
+//   User.findOne({ username: req.params.id })
+//   .populate('characterSheets')
+//   .exec((err, user) => {
+//     console.log(err, user)
+//     const characterNames = user.characterSheets.map((n) => {
+//       return { characterName: n.name, characterId: n._id };
+//     });
+//     res.locals.characters = characterNames;
+//     next();
+//   });
+// };
 
 module.exports = userController;

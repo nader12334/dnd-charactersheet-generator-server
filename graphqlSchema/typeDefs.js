@@ -6,7 +6,6 @@ const bcrypt = require("bcrypt");
 
 module.exports = gql`
   type CharacterDescription {
-    playerName: String
     personality: String
     bonds: String
     ideals: String
@@ -44,6 +43,7 @@ module.exports = gql`
   type CharacterSheet {
     id:ID
     name: String!
+    username: String!
     characterDescription: CharacterDescription
     info: Info
     mainStats: MainStats
@@ -57,14 +57,14 @@ module.exports = gql`
 
   type UnpopulatedUser {
     id:ID
-    username: String
+    username: String!
     password: String
     characterSheets: [ID]
   }
 
   type User {
     id:ID
-    username: String
+    username: String!
     password: String
     characterSheets: [CharacterSheet]
   }
@@ -76,7 +76,6 @@ module.exports = gql`
   }
   
   input CharacterDescriptionInput {
-    playerName: String
     personality: String
     bonds: String
     ideals: String
@@ -113,6 +112,7 @@ module.exports = gql`
   
   input SheetInput {
     name: String!
+    username: String!
     characterDescription: CharacterDescriptionInput
     info: InfoInput
     mainStats: MainStatsInput
@@ -127,12 +127,15 @@ module.exports = gql`
   type Query {
     getAllCharacterSheets: [CharacterSheet]
     getAllUsers: [User]
+    getCharById(id:ID): CharacterSheet
     getUserById(id:ID): User
+    getUserByUsername(username: String): User
     login(username: String, password:String): User
   }
 
   type Mutation {
-    createSheet(characterSheet: SheetInput, user: UserInput): CharacterSheet
-    createUser(characterSheet: SheetInput, user: UserInput): UnpopulatedUser 
+    createUser(characterSheet: SheetInput, user: UserInput): UnpopulatedUser
+    saveSheet(characterSheet: SheetInput, user: UserInput): CharacterSheet
+    deleteSheet(characterSheet: SheetInput, user: UserInput): User
   }
 `

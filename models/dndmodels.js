@@ -12,9 +12,9 @@ mongoose
   .catch((err)=> {console.log('Failed to connect to DB, Check models/dndmodels.js')})
 
 const characterSheetSchema = new Schema({
-  name: String,
+  name: {type: String, required: true},
+  username: {type: String, required: true},
   characterDescription: {
-    playerName: String,
     personality: String,
     bonds: String,
     ideals: String,
